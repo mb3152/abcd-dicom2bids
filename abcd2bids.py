@@ -32,8 +32,7 @@ import subprocess
 import sys
 
 # Constant: List of function names of steps 1-5 in the list above
-STEP_NAMES = ["reformat_fastqc_spreadsheet", "download_nda_data",
-              "unpack_and_setup", "correct_jsons", "validate_bids"]
+STEP_NAMES = ["reformat_fastqc_spreadsheet", "download_nda_data"]
 
 # Get path to directory containing abcd2bids.py
 try:
@@ -47,8 +46,8 @@ except (OSError, AssertionError):
 CONFIG_FILE = os.path.join(os.path.expanduser("~"), ".abcd2bids", "config.ini")
 CORRECT_JSONS = os.path.join(PWD, "src", "correct_jsons.py")
 DOWNLOAD_FOLDER = os.path.join(PWD, "raw")
-#NDA_AWS_TOKEN_MAKER = os.path.join(PWD, "src", "nda_aws_token_maker.py")
-NDA_AWS_TOKEN_MAKER = os.path.join(PWD, "src", "ndar_update_keys.py")
+NDA_AWS_TOKEN_MAKER = os.path.join(PWD, "src", "nda_aws_token_maker.py")
+# NDA_AWS_TOKEN_MAKER = os.path.join(PWD, "src", "ndar_update_keys.py")
 
 SERIES_TABLE_PARSER = os.path.join(PWD, "src", "aws_downloader.py")
 SPREADSHEET_DOWNLOAD = os.path.join(PWD, "temp", "abcd_fastqc01_reformatted.csv")
@@ -85,6 +84,9 @@ def main():
         if started:
             get_and_print_timestamp_when("The {} step".format(step),
                                          "started")
+            if step == 'reformat_fastqc_spreadsheet':
+                if os.path.exists('spreadsheets/abcd_fastqc01_reformatted.csv'):
+                    continue
             globals()[step](cli_args)
             get_and_print_timestamp_when("The {} step".format(step),
                                          "finished")
@@ -309,8 +311,8 @@ def validate_cli_args(args, parser):
     :return: Validated command-line arguments argparse namespace
     """
     # Validate FSL and MRE directories
-    validate_dir_path(args.fsl_dir, parser)
-    validate_dir_path(args.mre_dir, parser)
+    # validate_dir_path(args.fsl_dir, parser)
+    # validate_dir_path(args.mre_dir, parser)
 
     # Validate and create config file's parent directory
     try:
@@ -595,7 +597,7 @@ def reformat_fastqc_spreadsheet(cli_args):
         'EventName',
         'image_description',
         'image_timestamp'
-    ]).to_csv(SPREADSHEET_DOWNLOAD, index=False)
+    ]).to_csv('spreadsheets/abcd_fastqc01_reformatted.csv', index=False)
 
 
 def fix_split_col(qc_df):
